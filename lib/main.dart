@@ -1,9 +1,15 @@
+
 import 'package:flutter/material.dart';
 import 'package:task_app_for_daniel/consts/app_theme.dart';
-import 'package:task_app_for_daniel/services/local_storage.dart';
 import 'package:task_app_for_daniel/screens/loading_screen.dart';
+import 'package:task_app_for_daniel/services/local_storage.dart';
 
-void main() {
+
+
+void main() async {
+
+  WidgetsFlutterBinding.ensureInitialized();
+
   runApp(MyApp());
 }
 

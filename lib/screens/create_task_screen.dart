@@ -44,25 +44,11 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
     );
   }
 
-  Widget buildOldExpiredTask() {
-    if (oldTask == null || !oldTask.isExpired()) {
-      return Container();
-    }
-
-    return Center(
-      child: Text(
-        "We found an old task that has expired at ${parseDateTime(oldTask.alarmTime)}. Please create a new one",
-        style: TextStyle(color: Colors.red, fontSize: 18.0),
-      ),
-    );
-  }
-
   void getOldTask() async {
-    Task storedTask = await widget.storage.getCurrentTask();
-    if (storedTask != null) {
-      setState(() {
-        oldTask = storedTask;
-      });
+    oldTask = await widget.storage.getCurrentTask();
+    if (oldTask != null) {
+
+      displayOldTask();
     }
   }
 
@@ -130,7 +116,6 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          buildOldExpiredTask(),
           FieldWithLabel(
             labelText: "Title",
             hintText: "The title of the task",
@@ -197,5 +182,37 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
         ],
       ),
     );
+  }
+
+  void displayOldTask() async {
+    showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(oldTask.title),
+            content: SingleChildScrollView(
+              child: Column(
+                children: <Widget>[
+                  Text(oldTask.description),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: Text('OK'),
+                onPressed: () {
+                  deleteOldTask();
+                },
+              ),
+            ],
+          );
+        },
+      );
+  }
+
+  void deleteOldTask() async {
+    await widget.storage.removeTask();
+    Navigator.of(context).pop();
   }
 }

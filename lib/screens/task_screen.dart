@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:task_app_for_daniel/consts/app_colors.dart';
 import 'package:task_app_for_daniel/model/task.dart';
 import 'package:task_app_for_daniel/screens/create_task_screen.dart';
+import 'package:task_app_for_daniel/services/alarm_service.dart';
+import 'package:task_app_for_daniel/services/date_time_utils.dart';
 import 'package:task_app_for_daniel/services/local_storage.dart';
 import 'package:task_app_for_daniel/widgets/full_screen_loading.dart';
-import 'package:task_app_for_daniel/services/date_time_utils.dart';
 
 class TaskScreen extends StatefulWidget {
   final LocalStorage storage;
@@ -18,6 +19,7 @@ class TaskScreen extends StatefulWidget {
 class _TaskScreenState extends State<TaskScreen> {
   Task task;
   bool loading = true;
+  AlarmService alarmService;
 
   @override
   void initState() {
@@ -61,7 +63,9 @@ class _TaskScreenState extends State<TaskScreen> {
               )
             ],
           ),
-          SizedBox(height: 10.0,),
+          SizedBox(
+            height: 10.0,
+          ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -77,8 +81,9 @@ class _TaskScreenState extends State<TaskScreen> {
               )
             ],
           ),
-          SizedBox(height: 10.0,),
-
+          SizedBox(
+            height: 10.0,
+          ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -92,18 +97,18 @@ class _TaskScreenState extends State<TaskScreen> {
               Text(
                 parseDateTime(task.alarmTime),
               ),
-
             ],
           ),
-          SizedBox(height: 30.0,),
-
+          SizedBox(
+            height: 30.0,
+          ),
           ElevatedButton(
             onPressed: _showMyDialog,
             child: Text(
               "Delete",
               style: TextStyle(color: Colors.red),
             ),
-          )
+          ),
         ],
       ),
     );
@@ -115,9 +120,13 @@ class _TaskScreenState extends State<TaskScreen> {
       loading = false;
       task = storedTask;
     });
+
+    alarmService = AlarmService();
+    await alarmService.initAlarms();
+    startAlarm();
   }
 
-  void deleteTask() async{
+  void deleteTask() async {
     setState(() {
       loading = true;
     });
@@ -162,6 +171,12 @@ class _TaskScreenState extends State<TaskScreen> {
           ],
         );
       },
+    );
+  }
+
+  void startAlarm() {
+    alarmService.setAlarmForTask(
+      task
     );
   }
 }

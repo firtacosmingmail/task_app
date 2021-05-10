@@ -1,4 +1,4 @@
-# task_app_for_daniel
+# task_app
 
 A simple task timer
 
