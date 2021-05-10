@@ -36,8 +36,8 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => createAlarm(context),
-        label: const Text('Set alarm'),
-        icon: const Icon(Icons.check),
+        label: const Text('Set alarm', style: TextStyle(color: Colors.white),),
+        icon: const Icon(Icons.check, color: Colors.white,),
         backgroundColor: Colors.pink,
       ),
       body: buildBody(context),
@@ -47,7 +47,6 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   void getOldTask() async {
     oldTask = await widget.storage.getCurrentTask();
     if (oldTask != null) {
-
       displayOldTask();
     }
   }
@@ -67,6 +66,12 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
     if (task.alarmTime == null) {
       showError(
           "To save the alarm an alarm time is necessary. Please add an alarm time to the alarm");
+      return;
+    }
+
+    if (task.isExpired()) {
+      showError(
+          "The alarm has already expired. Please select another time.");
       return;
     }
 
@@ -141,15 +146,13 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
             },
           ),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(task.alarmTime == null
                   ? ""
-                  : "Selected alarm time: ${parseDateTime(task.alarmTime)}"),
-              SizedBox(
-                width: 10.0,
-              ),
-              ElevatedButton(
-                  onPressed: () {
+                  : "Selected alarm time:    ${parseDateTime(task.alarmTime)}"),
+              InkWell(
+                  onTap: () {
                     DatePicker.showDateTimePicker(context,
                         showTitleActions: true,
                         minTime: DateTime.now(),
@@ -162,7 +165,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                                 fontWeight: FontWeight.bold,
                                 fontSize: 18),
                             doneStyle:
-                            TextStyle(color: Colors.white, fontSize: 16)),
+                                TextStyle(color: Colors.white, fontSize: 16)),
                         onConfirm: newAlarmDateConfirmed,
                         currentTime: DateTime.now(),
                         locale: LocaleType.en);
@@ -173,12 +176,12 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                       task.alarmTime == null
                           ? 'Select alarm time'
                           : "Edit alarm time",
-                      style: TextStyle(color: Colors.black),
+                      style: TextStyle(color: Colors.blue,     decoration: TextDecoration.underline,
+                      ),
                     ),
                   )),
             ],
           )
-
         ],
       ),
     );
@@ -186,29 +189,33 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
 
   void displayOldTask() async {
     showDialog<void>(
-        context: context,
-        barrierDismissible: false, // user must tap button!
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text(oldTask.title),
-            content: SingleChildScrollView(
-              child: Column(
-                children: <Widget>[
-                  Text(oldTask.description),
-                ],
-              ),
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("I hope you did this"),
+          content: SingleChildScrollView(
+            child: Column(
+              children: <Widget>[
+                Text(
+                  oldTask.title,
+                  style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                ),
+                Text(oldTask.description, style: TextStyle(fontSize: 16.0)),
+              ],
             ),
-            actions: <Widget>[
-              TextButton(
-                child: Text('OK'),
-                onPressed: () {
-                  deleteOldTask();
-                },
-              ),
-            ],
-          );
-        },
-      );
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                deleteOldTask();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void deleteOldTask() async {

@@ -3,7 +3,7 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
    <application
-        android:label="task_app_for_daniel"
+        android:label="Task"
         android:icon="@mipmap/ic_launcher"
        android:name=".Application">
        <service

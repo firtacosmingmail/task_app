@@ -1,6 +1,6 @@
 import 'package:intl/intl.dart';
 
-final dateFormatter = DateFormat('yyyy-M-dTH:m:s'); // 2021-04-27T13:35:51.848+00:00
+final dateFormatter = DateFormat('d-M-yyyy H:m:s');
 
 DateTime dateTimeFromJson(String dateTime) {
   return dateFormatter.parse(dateTime);

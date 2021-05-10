@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:isolate';
 
 import 'dart:ui';
@@ -15,6 +16,9 @@ class AlarmService {
   static String isolateName = 'isolate';
   /// A port used to communicate from a background isolate to the UI isolate.
   final ReceivePort port = ReceivePort();
+
+  Function UICallback = null;
+
   NotificationService notificationService;
 
   // The background
@@ -22,6 +26,8 @@ class AlarmService {
 
   // The callback for our alarm
   static Future<void> callback() async {
+
+    print("alarm called");
     AndroidAlarmManager.cancel(ALARM_ID);
 
     LocalStorage storage = LocalStorage();
@@ -30,18 +36,21 @@ class AlarmService {
       return;
     }
 
+    print("printing notification");
     NotificationService notificationService = NotificationService();
-    notificationService.initialiseNotification();
-    notificationService.sendNotification(task);
+    await notificationService.initialiseNotification();
+    await notificationService.sendNotification(task);
+    print("printed notification");
 
     // This will be null if we're running in the background.
     uiSendPort ??= IsolateNameServer.lookupPortByName(isolateName);
-    uiSendPort?.send(null);
+    uiSendPort?.send(task);
   }
 
   AlarmService();
 
   initAlarms() async {
+    print("init Alarms");
 
     notificationService = NotificationService();
     notificationService.initialiseNotification();
@@ -52,10 +61,21 @@ class AlarmService {
       isolateName,
     );
     AndroidAlarmManager.initialize();
+    port.listen((_) async => await callUICallback());
+
+    print("done init Alarms");
   }
 
-  setAlarmForTask(Task task) async {
+  setAlarmForTask(Task task, Function callbackWhenIsCalled) async {
+    UICallback = callbackWhenIsCalled;
+    print("setting alarm for task");
     AndroidAlarmManager.cancel(ALARM_ID);
     await AndroidAlarmManager.oneShotAt(task.alarmTime, ALARM_ID, callback, exact: true, wakeup: true);
+  }
+
+  callUICallback() {
+    if ( UICallback != null ) {
+      UICallback();
+    }
   }
 }

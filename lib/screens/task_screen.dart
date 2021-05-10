@@ -24,7 +24,7 @@ class _TaskScreenState extends State<TaskScreen> {
   @override
   void initState() {
     super.initState();
-    getTaskFromStorage();
+    getTaskFromStorageAndSendAlarm();
   }
 
   @override
@@ -48,6 +48,17 @@ class _TaskScreenState extends State<TaskScreen> {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          task.isExpired()
+              ? Center(
+                  child: Text(
+                    "Task has expired",
+                    style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 25.0,
+                        fontWeight: FontWeight.bold),
+                  ),
+                )
+              : Container(),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -102,16 +113,31 @@ class _TaskScreenState extends State<TaskScreen> {
           SizedBox(
             height: 30.0,
           ),
-          ElevatedButton(
-            onPressed: _showMyDialog,
-            child: Text(
-              "Delete",
-              style: TextStyle(color: Colors.red),
-            ),
-          ),
+          task.isExpired()
+              ? ElevatedButton(
+                  onPressed: goToCreateNewTask,
+                  child: Text(
+                    "Create new task",
+                    style: TextStyle(color: Colors.red),
+                  ),
+                )
+              : ElevatedButton(
+                  onPressed: _showMyDialog,
+                  child: Text(
+                    "Delete",
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
         ],
       ),
     );
+  }
+
+  void getTaskFromStorageAndSendAlarm() async {
+    await getTaskFromStorage();
+    alarmService = AlarmService();
+    await alarmService.initAlarms();
+    startAlarm();
   }
 
   void getTaskFromStorage() async {
@@ -120,10 +146,6 @@ class _TaskScreenState extends State<TaskScreen> {
       loading = false;
       task = storedTask;
     });
-
-    alarmService = AlarmService();
-    await alarmService.initAlarms();
-    startAlarm();
   }
 
   void deleteTask() async {
@@ -175,8 +197,22 @@ class _TaskScreenState extends State<TaskScreen> {
   }
 
   void startAlarm() {
-    alarmService.setAlarmForTask(
-      task
+    alarmService.setAlarmForTask(task, refresh);
+  }
+
+  refresh() {
+    getTaskFromStorage();
+  }
+
+  void goToCreateNewTask() async {
+    await widget.storage.removeTask();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) {
+          return CreateTaskScreen(widget.storage);
+        },
+      ),
     );
   }
 }
